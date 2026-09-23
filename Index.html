@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mohammad Irfan ki Website</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #fff;
+            margin: 0;
+            padding: 10px;
+        }
+        h1, h2 {
+            margin: 10px 0;
+        }
+        canvas {
+            background-color: #000;
+            border: 2px solid #fff;
+            display: block;
+            margin: 10px auto;
+            max-width: 90vw;
+            max-height: 50vh;
+        }
+        .controls {
+            margin-top: 15px;
+            display: inline-block;
+        }
+        .btn {
+            background-color: #444;
+            color: #fff;
+            border: 1px solid #fff;
+            padding: 12px 20px;
+            font-size: 18px;
+            margin: 5px;
+            border-radius: 5px;
+            user-select: none;
+        }
+        .btn:active {
+            background-color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mohammad Irfan ki Website Par Aapka Swagat Hai</h1>
+    <h2>Snake Game</h2>
+    <p>Score: <span id="score">0</span></p>
+
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <!-- मोबाइल यूज़र्स के लिए कंट्रोल बटन्स -->
+    <div class="controls">
+        <div>
+            <button class="btn" onclick="changeDir('UP')">▲</button>
+        </div>
+        <div>
+            <button class="btn" onclick="changeDir('LEFT')">◀</button>
+            <button class="btn" onclick="changeDir('DOWN')">▼</button>
+            <button class="btn" onclick="changeDir('RIGHT')">▶</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+
+        let snake = [{ x: 10, y: 10 }];
+        let dx = 1; // शुरुआत में दाईं ओर बढ़ेगा
+        let dy = 0;
+        let foodX = 5;
+        let foodY = 5;
+        let score = 0;
+        let gameInterval;
+
+        function startGame() {
+            generateFood();
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, 150); // सांप की स्पीड (150ms)
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+        }
+
+        function update() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+
+            // दीवार से टकराने पर गेम रीसेट
+            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+                resetGame();
+                return;
+            }
+
+            // खुद से टकराने पर गेम रीसेट
+            for (let i = 0; i < snake.length; i++) {
+                if (snake[i].x === head.x && snake[i].y === head.y) {
+                    resetGame();
+                    return;
+                }
+            }
+
+            snake.unshift(head);
+
+            // खाना खाने पर
+            if (head.x === foodX && head.y === foodY) {
+                score++;
+                document.getElementById("score").innerText = score;
+                generateFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        function draw() {
+            // बैकग्राउंड
+            ctx.fillStyle = "#000";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // सांप (हरा)
+            ctx.fillStyle = "#00FF00";
+            for (let i = 0; i < snake.length; i++) {
+                ctx.fillRect(snake[i].x * gridSize, snake[i].y * gridSize, gridSize - 2, gridSize - 2);
+            }
+
+            // खाना (लाल)
+            ctx.fillStyle = "#FF0000";
+            ctx.fillRect(foodX * gridSize, foodY * gridSize, gridSize - 2, gridSize - 2);
+        }
+
+        function generateFood() {
+            foodX = Math.floor(Math.random() * tileCount);
+            foodY = Math.floor(Math.random() * tileCount);
+        }
+
+        function resetGame() {
+            alert("Game Over! Score: " + score);
+            snake = [{ x: 10, y: 10 }];
+            dx = 1;
+            dy = 0;
+            score = 0;
+            document.getElementById("score").innerText = score;
+            generateFood();
+        }
+
+        function changeDir(dir) {
+            if (dir === 'UP' && dy === 0) { dx = 0; dy = -1; }
+            if (dir === 'DOWN' && dy === 0) { dx = 0; dy = 1; }
+            if (dir === 'LEFT' && dx === 0) { dx = -1; dy = 0; }
+            if (dir === 'RIGHT' && dx === 0) { dx = 1; dy = 0; }
+        }
+
+        // कीबोर्ड कंट्रोल
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "ArrowUp") changeDir('UP');
+            if (e.key === "ArrowDown") changeDir('DOWN');
+            if (e.key === "ArrowLeft") changeDir('LEFT');
+            if (e.key === "ArrowRight") changeDir('RIGHT');
+        });
+
+        startGame();
+    </script>
+</body>
+</html>
